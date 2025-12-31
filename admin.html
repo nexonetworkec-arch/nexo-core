@@ -3,149 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexo Admin | Gestión de Contenido</title>
+    <title>Nexo Admin v4.5 | Modular & Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /* --- MÓDULO 1: ESTILOS (Nexo Design System) --- */
         :root {
-            --kick-green: #53fc18;
-            --neon-blue: #00d2ff;
-            --bg-dark: #020617;
-            --card-bg: #0f172a;
+            --kick-green: #53fc18; --neon-blue: #00d2ff; --bg-dark: #020617;
+            --card-bg: #0f172a; --input-bg: #1e293b; --danger: #ff5a5f;
         }
-        body {
-            background: var(--bg-dark);
-            color: white;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .admin-container {
-            width: 100%;
-            max-width: 600px;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 20px;
-            border: 1px solid var(--neon-blue);
-            box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
-            margin: 20px;
-        }
-        h1 { font-family: 'Orbitron'; font-size: 1.5rem; text-align: center; color: var(--kick-green); margin-bottom: 30px; }
-        .section-title { font-family: 'Orbitron'; font-size: 0.9rem; color: var(--neon-blue); margin: 20px 0 10px; border-bottom: 1px solid rgba(0,210,255,0.2); padding-bottom: 5px; }
+        body { background: var(--bg-dark); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        .admin-container { width: 100%; max-width: 850px; margin: 0 auto; display: none; }
+        .card { background: var(--card-bg); border: 1px solid rgba(0, 210, 255, 0.2); padding: 20px; border-radius: 15px; margin-bottom: 25px; }
         
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; margin-bottom: 5px; color: #94a3b8; }
-        input {
-            width: 100%;
-            background: #1e293b;
-            border: 1px solid #334155;
-            padding: 10px;
-            border-radius: 8px;
-            color: white;
-            font-family: 'Inter';
+        /* Componentes de Negocio */
+        .biz-item {
+            background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 12px;
+            display: grid; grid-template-columns: 40px 60px 1fr auto; gap: 15px; align-items: center;
+            border-left: 4px solid var(--neon-blue);
         }
-        input:focus { outline: none; border-color: var(--kick-green); }
+        .order-btns { display: flex; flex-direction: column; gap: 4px; }
+        .btn-order { background: #334155; border: none; color: white; cursor: pointer; border-radius: 4px; padding: 4px; }
+        .btn-order:hover { background: var(--kick-green); color: black; }
         
-        .btn-save {
-            width: 100%;
-            background: var(--kick-green);
-            color: black;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-weight: 900;
-            font-family: 'Orbitron';
-            cursor: pointer;
-            margin-top: 20px;
-            transition: 0.3s;
-        }
-        .btn-save:hover { filter: brightness(1.2); transform: scale(1.02); }
+        /* Botones Globales */
+        .btn { padding: 10px 15px; border-radius: 6px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-save { background: var(--kick-green); color: black; }
+        .btn-edit { background: var(--neon-blue); color: black; }
+        .btn-delete { background: var(--danger); color: white; }
+        
+        input { background: var(--input-bg); border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; font-size: 13px; }
+        input:focus { border-color: var(--neon-blue); outline: none; }
 
-        /* Login */
-        #login-overlay {
-            position: fixed; inset: 0; background: var(--bg-dark);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
-        }
-        .login-box { text-align: center; }
-        
-        .toast {
-            position: fixed; bottom: 20px; right: 20px;
-            background: var(--kick-green); color: black;
-            padding: 10px 20px; border-radius: 8px; font-weight: bold;
-            display: none; z-index: 200;
-        }
+        .edit-panel { grid-column: 1 / -1; display: none; padding-top: 15px; border-top: 1px solid #334155; margin-top: 10px; }
+
+        #login-overlay { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        #toast { position: fixed; bottom: 20px; right: 20px; background: var(--kick-green); color: black; padding: 12px 25px; border-radius: 8px; display: none; z-index: 2000; }
     </style>
 </head>
 <body>
 
     <div id="login-overlay">
-        <div class="login-box">
-            <h1 style="margin-bottom: 10px;">ACCESO PRIVADO</h1>
-            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Nexo Network Admin System</p>
-            <input type="password" id="admin-pass" placeholder="Contraseña..." style="width: 250px; text-align: center;">
-            <button class="btn-save" onclick="checkPass()" style="width: 250px; margin-top: 15px;">ENTRAR</button>
+        <div style="text-align: center; background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--neon-blue);">
+            <h2 style="font-family:'Orbitron'; color:var(--kick-green)">AUTH NEXO PRO</h2>
+            <input type="password" id="admin-pass" placeholder="TOKEN DE ACCESO" style="text-align:center; margin-bottom:15px;">
+            <button class="btn btn-save" style="width:100%" onclick="Auth.check()">DESBLOQUEAR</button>
         </div>
     </div>
 
-    <div class="admin-container" id="admin-panel" style="display:none;">
-        <h1>PANEL DE CONTROL NEXO</h1>
+    <div class="admin-container" id="admin-panel">
+        <header style="text-align:center; margin-bottom:40px;">
+            <h1 style="font-family:'Orbitron'; margin:0;">NEXO <span style="color:var(--kick-green)">NETWORK</span></h1>
+            <p style="font-size:10px; letter-spacing:3px; color:var(--neon-blue)">SISTEMA DE GESTIÓN CENTRALIZADO</p>
+        </header>
 
-        <div class="section-title">BANNER IZQUIERDO (AUSPICIA)</div>
-        <div class="form-group">
-            <label>Imagen URL (Dejar vacío para usar texto)</label>
-            <input type="text" id="left-img" placeholder="https://...">
-        </div>
-        <div class="form-group">
-            <label>Texto (Si no hay imagen)</label>
-            <input type="text" id="left-text" placeholder="DISPONIBLE">
-        </div>
-        <div class="form-group">
-            <label>URL de Destino</label>
-            <input type="text" id="left-url" placeholder="https://...">
-        </div>
-
-        <div class="section-title">BANNER DERECHO (PUBLICIDAD)</div>
-        <div class="form-group">
-            <label>Imagen URL (Dejar vacío para usar texto)</label>
-            <input type="text" id="right-img" placeholder="https://...">
-        </div>
-        <div class="form-group">
-            <label>Texto (Si no hay imagen)</label>
-            <input type="text" id="right-text" placeholder="PUBLICITA AQUÍ">
-        </div>
-        <div class="form-group">
-            <label>URL de Destino</label>
-            <input type="text" id="right-url" placeholder="https://...">
+        <div class="card">
+            <h3 style="font-family:'Orbitron'; color:var(--neon-blue); font-size:0.9rem; margin-bottom:20px;">
+                <i class="fa-solid fa-ads"></i> BANNERS LATERALES (IMAGEN + CLICK)
+            </h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:10px;">
+                    <label style="font-size:10px; color:var(--kick-green)">IZQUIERDO</label>
+                    <input type="text" id="left-img" placeholder="URL de la Imagen">
+                    <input type="text" id="left-url" placeholder="URL de Destino (Enlace)">
+                </div>
+                <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:10px;">
+                    <label style="font-size:10px; color:var(--kick-green)">DERECHO</label>
+                    <input type="text" id="right-img" placeholder="URL de la Imagen">
+                    <input type="text" id="right-url" placeholder="URL de Destino (Enlace)">
+                </div>
+            </div>
+            <button class="btn btn-save" style="width:100%; margin-top:20px;" onclick="Banners.save()">ACTUALIZAR BANNERS</button>
         </div>
 
-        <div class="section-title">TARJETA DE NEGOCIO (SIDEBAR)</div>
-        <div class="form-group">
-            <label>Nombre del Negocio</label>
-            <input type="text" id="biz-name">
-        </div>
-        <div class="form-group">
-            <label>Imagen URL (400x110 aprox)</label>
-            <input type="text" id="biz-img">
-        </div>
-        <div class="form-group">
-            <label>Código de Cupón</label>
-            <input type="text" id="biz-code">
-        </div>
-        <div class="form-group">
-            <label>URL de Destino</label>
-            <input type="text" id="biz-url">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="font-family:'Orbitron'; color:var(--neon-blue); font-size:0.9rem; margin:0;">REORDENAR NEGOCIOS</h3>
+                <button class="btn" style="background:transparent; color:var(--neon-blue); border:1px solid var(--neon-blue); font-size:10px;" onclick="Business.load()">
+                    <i class="fa-solid fa-rotate"></i> SINCRONIZAR
+                </button>
+            </div>
+            <div id="biz-list"></div>
         </div>
 
-        <button class="btn-save" onclick="saveData()">ACTUALIZAR TODO EL SISTEMA</button>
+        <div class="card" style="border-style: dashed; border-color: #334155;">
+            <h3 style="font-family:'Orbitron'; font-size:0.9rem;">+ REGISTRAR NUEVO SOCIO</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <input type="text" id="new-name" placeholder="Nombre Comercial">
+                <input type="text" id="new-code" placeholder="Código de Cupón">
+                <input type="text" id="new-img" placeholder="URL Logo">
+                <input type="text" id="new-url" placeholder="Enlace Destino">
+            </div>
+            <button class="btn btn-save" style="width:100%; margin-top:15px;" onclick="Business.add()">SUBIR A LA NUBE</button>
+        </div>
     </div>
 
-    <div id="toast" class="toast">Sincronizado con Firebase ✓</div>
+    <div id="toast">Acción completada ✓</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, get, push, remove, update, query, orderByChild, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDfH6atXa_DE5xTuo7T4s1MOiZtP-na9Ew",
@@ -160,68 +118,141 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Seguridad Básica
-        window.checkPass = () => {
-            const pass = document.getElementById('admin-pass').value;
-            if(pass === "@Mltsrvcs8102") {
-                document.getElementById('login-overlay').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
-                loadCurrentData();
-            } else {
-                alert("Contraseña incorrecta");
+        /* --- OBJETO MÓDULO: SEGURIDAD --- */
+        window.Auth = {
+            check: () => {
+                const pass = document.getElementById('admin-pass').value;
+                if(pass === "@Mltsrvcs8102") {
+                    document.getElementById('login-overlay').style.display = 'none';
+                    document.getElementById('admin-panel').style.display = 'block';
+                    Banners.load();
+                    Business.load();
+                } else { alert("Acceso denegado"); }
             }
         };
 
-        // Cargar datos actuales de Firebase
-        async function loadCurrentData() {
-            const snapshot = await get(ref(db, 'content'));
-            if(snapshot.exists()) {
-                const data = snapshot.val();
-                if(data.banners) {
-                    document.getElementById('left-img').value = data.banners.left?.img || '';
-                    document.getElementById('left-text').value = data.banners.left?.text || '';
-                    document.getElementById('left-url').value = data.banners.left?.url || '';
-                    document.getElementById('right-img').value = data.banners.right?.img || '';
-                    document.getElementById('right-text').value = data.banners.right?.text || '';
-                    document.getElementById('right-url').value = data.banners.right?.url || '';
+        /* --- OBJETO MÓDULO: BANNERS --- */
+        window.Banners = {
+            load: async () => {
+                const snap = await get(ref(db, 'content/banners'));
+                if(snap.exists()){
+                    const b = snap.val();
+                    document.getElementById('left-img').value = b.left?.img || '';
+                    document.getElementById('left-url').value = b.left?.url || '';
+                    document.getElementById('right-img').value = b.right?.img || '';
+                    document.getElementById('right-url').value = b.right?.url || '';
                 }
-                if(data.biz) {
-                    document.getElementById('biz-name').value = data.biz.name || '';
-                    document.getElementById('biz-img').value = data.biz.img || '';
-                    document.getElementById('biz-code').value = data.biz.code || '';
-                    document.getElementById('biz-url').value = data.biz.url || '';
+            },
+            save: () => {
+                const data = {
+                    left: { img: document.getElementById('left-img').value, url: document.getElementById('left-url').value },
+                    right: { img: document.getElementById('right-img').value, url: document.getElementById('right-url').value }
+                };
+                set(ref(db, 'content/banners'), data).then(() => UI.notify("Banners y URLs actualizados"));
+            }
+        };
+
+        /* --- OBJETO MÓDULO: NEGOCIOS --- */
+        window.Business = {
+            load: () => {
+                const bizQuery = query(ref(db, 'content/businesses'), orderByChild('order'));
+                onValue(bizQuery, (snapshot) => {
+                    const listDiv = document.getElementById('biz-list');
+                    listDiv.innerHTML = "";
+                    let items = [];
+                    snapshot.forEach(child => { items.push({ id: child.key, ...child.val() }); });
+
+                    items.forEach((b, index) => {
+                        listDiv.innerHTML += `
+                            <div class="biz-item">
+                                <div class="order-btns">
+                                    <button class="btn-order" onclick="Business.move(${index}, -1)"><i class="fa-solid fa-chevron-up"></i></button>
+                                    <button class="btn-order" onclick="Business.move(${index}, 1)"><i class="fa-solid fa-chevron-down"></i></button>
+                                </div>
+                                <img src="${b.img}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;">
+                                <div>
+                                    <div style="font-weight:bold; font-size:14px; color:white;">${b.name}</div>
+                                    <div style="font-size:10px; color:var(--neon-blue)">ORDEN: ${b.order}</div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-edit" onclick="Business.toggleEdit('${b.id}')"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="btn btn-delete" onclick="Business.delete('${b.id}')"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                                <div class="edit-panel" id="edit-${b.id}">
+                                    <input type="text" id="ed-name-${b.id}" value="${b.name}">
+                                    <input type="text" id="ed-img-${b.id}" value="${b.img}">
+                                    <input type="text" id="ed-code-${b.id}" value="${b.code}">
+                                    <input type="text" id="ed-url-${b.id}" value="${b.url}">
+                                    <button class="btn btn-save" style="width:100%" onclick="Business.saveEdit('${b.id}')">APLICAR CAMBIOS</button>
+                                </div>
+                            </div>
+                        `;
+                    }, { onlyOnce: true });
+                });
+            },
+
+            move: async (currentIndex, direction) => {
+                const snap = await get(query(ref(db, 'content/businesses'), orderByChild('order')));
+                let list = [];
+                snap.forEach(c => { list.push({id: c.key, order: c.val().order}); });
+
+                let targetIndex = currentIndex + direction;
+                if (targetIndex >= 0 && targetIndex < list.length) {
+                    const updates = {};
+                    updates[`/content/businesses/${list[currentIndex].id}/order`] = list[targetIndex].order;
+                    updates[`/content/businesses/${list[targetIndex].id}/order`] = list[currentIndex].order;
+                    update(ref(db), updates).then(() => Business.load());
+                }
+            },
+
+            add: async () => {
+                const snap = await get(ref(db, 'content/businesses'));
+                const biz = {
+                    name: document.getElementById('new-name').value,
+                    code: document.getElementById('new-code').value,
+                    img: document.getElementById('new-img').value,
+                    url: document.getElementById('new-url').value,
+                    order: (snap.size || 0) + 1
+                };
+                if(!biz.name) return;
+                push(ref(db, 'content/businesses'), biz).then(() => {
+                    UI.notify("Negocio registrado");
+                    Business.load();
+                });
+            },
+
+            toggleEdit: (id) => {
+                const el = document.getElementById(`edit-${id}`);
+                el.style.display = el.style.display === "block" ? "none" : "block";
+            },
+
+            saveEdit: (id) => {
+                const data = {
+                    name: document.getElementById(`ed-name-${id}`).value,
+                    img: document.getElementById(`ed-img-${id}`).value,
+                    code: document.getElementById(`ed-code-${id}`).value,
+                    url: document.getElementById(`ed-url-${id}`).value
+                };
+                update(ref(db, `content/businesses/${id}`), data).then(() => {
+                    UI.notify("Actualizado con éxito");
+                    Business.load();
+                });
+            },
+
+            delete: (id) => {
+                if(confirm("¿Eliminar socio?")) {
+                    remove(ref(db, `content/businesses/${id}`)).then(() => Business.load());
                 }
             }
-        }
+        };
 
-        // Guardar datos en Firebase
-        window.saveData = () => {
-            const updates = {
-                banners: {
-                    left: {
-                        img: document.getElementById('left-img').value,
-                        text: document.getElementById('left-text').value,
-                        url: document.getElementById('left-url').value
-                    },
-                    right: {
-                        img: document.getElementById('right-img').value,
-                        text: document.getElementById('right-text').value,
-                        url: document.getElementById('right-url').value
-                    }
-                },
-                biz: {
-                    name: document.getElementById('biz-name').value,
-                    img: document.getElementById('biz-img').value,
-                    code: document.getElementById('biz-code').value,
-                    url: document.getElementById('biz-url').value
-                }
-            };
-
-            set(ref(db, 'content'), updates).then(() => {
-                const toast = document.getElementById('toast');
-                toast.style.display = 'block';
-                setTimeout(() => toast.style.display = 'none', 3000);
-            }).catch(err => alert("Error al guardar: " + err));
+        /* --- OBJETO MÓDULO: UI --- */
+        window.UI = {
+            notify: (msg) => {
+                const t = document.getElementById('toast');
+                t.innerText = msg; t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 3000);
+            }
         };
     </script>
 </body>
