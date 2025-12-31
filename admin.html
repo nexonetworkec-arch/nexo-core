@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexo Admin | Acceso Restringido</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --kick-green: #53fc18;
+            --neon-blue: #00d2ff;
+            --bg-dark: #020617;
+            --card-bg: #0f172a;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+        }
+
+        /* Panel Principal (Oculto por defecto) */
+        #admin-panel { display: none; width: 100%; max-width: 500px; }
+
+        h1 { font-family: 'Orbitron'; color: var(--kick-green); letter-spacing: 4px; margin-bottom: 30px; text-align: center; }
+
+        .admin-container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .section { margin-bottom: 25px; }
+        label { display: block; font-family: 'Orbitron'; font-size: 12px; color: var(--neon-blue); margin-bottom: 10px; }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        input:focus { outline: none; border-color: var(--neon-blue); }
+
+        .btn-action {
+            width: 100%;
+            padding: 15px;
+            background: var(--kick-green);
+            color: black;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Orbitron';
+            font-weight: 900;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-action:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(83, 252, 24, 0.4); }
+
+        #status-msg { margin-top: 20px; text-align: center; font-size: 13px; font-family: 'Orbitron'; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <h1><i class="fa-solid fa-lock"></i> ACCESO</h1>
+        <div class="admin-container">
+            <label>CONTRASEÑA DEL ADMINISTRADOR</label>
+            <input type="password" id="passInput" placeholder="Introduce la clave...">
+            <button class="btn-action" onclick="checkPass()">ENTRAR</button>
+            <p id="login-error" style="color: #ff5a5f; font-size: 12px; margin-top: 15px; display: none;">Clave incorrecta. Inténtalo de nuevo.</p>
+        </div>
+    </div>
+
+    <div id="admin-panel">
+        <h1><i class="fa-solid fa-gears"></i> NEXO ADMIN</h1>
+        <div class="admin-container">
+            <div class="section">
+                <label>TEXTO BANNER IZQUIERDO</label>
+                <input type="text" id="leftBanner">
+                
+                <label>TEXTO BANNER DERECHO</label>
+                <input type="text" id="rightBanner">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+
+            <div class="section">
+                <label>NOMBRE DEL NEGOCIO</label>
+                <input type="text" id="bizName">
+                
+                <label>CÓDIGO DE CUPÓN</label>
+                <input type="text" id="bizCode">
+
+                <label>URL IMAGEN (LINK)</label>
+                <input type="text" id="bizImg">
+            </div>
+
+            <button class="btn-action" onclick="updateFirebase()">Actualizar Web</button>
+            <div id="status-msg"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfH6atXa_DE5xTuo7T4s1MOiZtP-na9Ew",
+            authDomain: "nexonetwork-f4e31.firebaseapp.com",
+            databaseURL: "https://nexonetwork-f4e31-default-rtdb.firebaseio.com",
+            projectId: "nexonetwork-f4e31",
+            storageBucket: "nexonetwork-f4e31.firebasestorage.app",
+            messagingSenderId: "241105375532",
+            appId: "1:241105375532:web:512c62daaaf15d44a8dc89"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- LÓGICA DE CONTRASEÑA ---
+        const CLAVE_MAESTRA = "Nexo2024"; // <--- CAMBIA TU CONTRASEÑA AQUÍ
+
+        window.checkPass = function() {
+            const input = document.getElementById('passInput').value;
+            if(input === CLAVE_MAESTRA) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+                loadCurrentData();
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
+        // Cargar datos
+        async function loadCurrentData() {
+            const snapshot = await get(ref(db, 'content'));
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                if(data.banners) {
+                    document.getElementById('leftBanner').value = data.banners.left || "";
+                    document.getElementById('rightBanner').value = data.banners.right || "";
+                }
+                if(data.biz) {
+                    document.getElementById('bizName').value = data.biz.name || "";
+                    document.getElementById('bizCode').value = data.biz.code || "";
+                    document.getElementById('bizImg').value = data.biz.img || "";
+                }
+            }
+        }
+
+        // Actualizar
+        window.updateFirebase = function() {
+            const status = document.getElementById('status-msg');
+            const bData = { left: document.getElementById('leftBanner').value, right: document.getElementById('rightBanner').value };
+            const zData = { name: document.getElementById('bizName').value, code: document.getElementById('bizCode').value, img: document.getElementById('bizImg').value };
+
+            Promise.all([
+                set(ref(db, 'content/banners'), bData),
+                set(ref(db, 'content/biz'), zData)
+            ]).then(() => {
+                status.style.color = "var(--kick-green)";
+                status.innerHTML = "¡WEB ACTUALIZADA!";
+                setTimeout(() => status.innerHTML = "", 3000);
+            });
+        }
+    </script>
+</body>
+</html>
