@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexo Admin | Acceso Restringido</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Nexo Admin | Gestión de Contenido</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,117 +12,136 @@
             --bg-dark: #020617;
             --card-bg: #0f172a;
         }
-
         body {
-            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            background: var(--bg-dark);
             color: white;
             font-family: 'Inter', sans-serif;
             margin: 0;
-            padding: 20px;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
         }
-
-        /* Login Screen */
-        #login-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 80vh;
-        }
-
-        /* Panel Principal (Oculto por defecto) */
-        #admin-panel { display: none; width: 100%; max-width: 500px; }
-
-        h1 { font-family: 'Orbitron'; color: var(--kick-green); letter-spacing: 4px; margin-bottom: 30px; text-align: center; }
-
         .admin-container {
+            width: 100%;
+            max-width: 600px;
             background: var(--card-bg);
             padding: 30px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
+            margin: 20px;
         }
-
-        .section { margin-bottom: 25px; }
-        label { display: block; font-family: 'Orbitron'; font-size: 12px; color: var(--neon-blue); margin-bottom: 10px; }
+        h1 { font-family: 'Orbitron'; font-size: 1.5rem; text-align: center; color: var(--kick-green); margin-bottom: 30px; }
+        .section-title { font-family: 'Orbitron'; font-size: 0.9rem; color: var(--neon-blue); margin: 20px 0 10px; border-bottom: 1px solid rgba(0,210,255,0.2); padding-bottom: 5px; }
         
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; margin-bottom: 5px; color: #94a3b8; }
         input {
             width: 100%;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 10px;
             border-radius: 8px;
             color: white;
-            font-size: 14px;
-            margin-bottom: 15px;
-            box-sizing: border-box;
+            font-family: 'Inter';
         }
-
-        input:focus { outline: none; border-color: var(--neon-blue); }
-
-        .btn-action {
+        input:focus { outline: none; border-color: var(--kick-green); }
+        
+        .btn-save {
             width: 100%;
-            padding: 15px;
             background: var(--kick-green);
             color: black;
             border: none;
+            padding: 15px;
             border-radius: 10px;
-            font-family: 'Orbitron';
             font-weight: 900;
+            font-family: 'Orbitron';
             cursor: pointer;
+            margin-top: 20px;
             transition: 0.3s;
-            text-transform: uppercase;
         }
+        .btn-save:hover { filter: brightness(1.2); transform: scale(1.02); }
 
-        .btn-action:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(83, 252, 24, 0.4); }
-
-        #status-msg { margin-top: 20px; text-align: center; font-size: 13px; font-family: 'Orbitron'; }
+        /* Login */
+        #login-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
+        }
+        .login-box { text-align: center; }
+        
+        .toast {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--kick-green); color: black;
+            padding: 10px 20px; border-radius: 8px; font-weight: bold;
+            display: none; z-index: 200;
+        }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <h1><i class="fa-solid fa-lock"></i> ACCESO</h1>
-        <div class="admin-container">
-            <label>CONTRASEÑA DEL ADMINISTRADOR</label>
-            <input type="password" id="passInput" placeholder="Introduce la clave...">
-            <button class="btn-action" onclick="checkPass()">ENTRAR</button>
-            <p id="login-error" style="color: #ff5a5f; font-size: 12px; margin-top: 15px; display: none;">Clave incorrecta. Inténtalo de nuevo.</p>
+    <div id="login-overlay">
+        <div class="login-box">
+            <h1 style="margin-bottom: 10px;">ACCESO PRIVADO</h1>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Nexo Network Admin System</p>
+            <input type="password" id="admin-pass" placeholder="Contraseña..." style="width: 250px; text-align: center;">
+            <button class="btn-save" onclick="checkPass()" style="width: 250px; margin-top: 15px;">ENTRAR</button>
         </div>
     </div>
 
-    <div id="admin-panel">
-        <h1><i class="fa-solid fa-gears"></i> NEXO ADMIN</h1>
-        <div class="admin-container">
-            <div class="section">
-                <label>TEXTO BANNER IZQUIERDO</label>
-                <input type="text" id="leftBanner">
-                
-                <label>TEXTO BANNER DERECHO</label>
-                <input type="text" id="rightBanner">
-            </div>
+    <div class="admin-container" id="admin-panel" style="display:none;">
+        <h1>PANEL DE CONTROL NEXO</h1>
 
-            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
-
-            <div class="section">
-                <label>NOMBRE DEL NEGOCIO</label>
-                <input type="text" id="bizName">
-                
-                <label>CÓDIGO DE CUPÓN</label>
-                <input type="text" id="bizCode">
-
-                <label>URL IMAGEN (LINK)</label>
-                <input type="text" id="bizImg">
-            </div>
-
-            <button class="btn-action" onclick="updateFirebase()">Actualizar Web</button>
-            <div id="status-msg"></div>
+        <div class="section-title">BANNER IZQUIERDO (AUSPICIA)</div>
+        <div class="form-group">
+            <label>Imagen URL (Dejar vacío para usar texto)</label>
+            <input type="text" id="left-img" placeholder="https://...">
         </div>
+        <div class="form-group">
+            <label>Texto (Si no hay imagen)</label>
+            <input type="text" id="left-text" placeholder="DISPONIBLE">
+        </div>
+        <div class="form-group">
+            <label>URL de Destino</label>
+            <input type="text" id="left-url" placeholder="https://...">
+        </div>
+
+        <div class="section-title">BANNER DERECHO (PUBLICIDAD)</div>
+        <div class="form-group">
+            <label>Imagen URL (Dejar vacío para usar texto)</label>
+            <input type="text" id="right-img" placeholder="https://...">
+        </div>
+        <div class="form-group">
+            <label>Texto (Si no hay imagen)</label>
+            <input type="text" id="right-text" placeholder="PUBLICITA AQUÍ">
+        </div>
+        <div class="form-group">
+            <label>URL de Destino</label>
+            <input type="text" id="right-url" placeholder="https://...">
+        </div>
+
+        <div class="section-title">TARJETA DE NEGOCIO (SIDEBAR)</div>
+        <div class="form-group">
+            <label>Nombre del Negocio</label>
+            <input type="text" id="biz-name">
+        </div>
+        <div class="form-group">
+            <label>Imagen URL (400x110 aprox)</label>
+            <input type="text" id="biz-img">
+        </div>
+        <div class="form-group">
+            <label>Código de Cupón</label>
+            <input type="text" id="biz-code">
+        </div>
+        <div class="form-group">
+            <label>URL de Destino</label>
+            <input type="text" id="biz-url">
+        </div>
+
+        <button class="btn-save" onclick="saveData()">ACTUALIZAR TODO EL SISTEMA</button>
     </div>
+
+    <div id="toast" class="toast">Sincronizado con Firebase ✓</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -142,52 +160,69 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- LÓGICA DE CONTRASEÑA ---
-        const CLAVE_MAESTRA = "Nexo2024"; // <--- CAMBIA TU CONTRASEÑA AQUÍ
-
-        window.checkPass = function() {
-            const input = document.getElementById('passInput').value;
-            if(input === CLAVE_MAESTRA) {
-                document.getElementById('login-screen').style.display = 'none';
+        // Seguridad Básica
+        window.checkPass = () => {
+            const pass = document.getElementById('admin-pass').value;
+            if(pass === "@Mltsrvcs8102") {
+                document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
                 loadCurrentData();
             } else {
-                document.getElementById('login-error').style.display = 'block';
+                alert("Contraseña incorrecta");
             }
-        }
+        };
 
-        // Cargar datos
+        // Cargar datos actuales de Firebase
         async function loadCurrentData() {
             const snapshot = await get(ref(db, 'content'));
-            if (snapshot.exists()) {
+            if(snapshot.exists()) {
                 const data = snapshot.val();
                 if(data.banners) {
-                    document.getElementById('leftBanner').value = data.banners.left || "";
-                    document.getElementById('rightBanner').value = data.banners.right || "";
+                    document.getElementById('left-img').value = data.banners.left?.img || '';
+                    document.getElementById('left-text').value = data.banners.left?.text || '';
+                    document.getElementById('left-url').value = data.banners.left?.url || '';
+                    document.getElementById('right-img').value = data.banners.right?.img || '';
+                    document.getElementById('right-text').value = data.banners.right?.text || '';
+                    document.getElementById('right-url').value = data.banners.right?.url || '';
                 }
                 if(data.biz) {
-                    document.getElementById('bizName').value = data.biz.name || "";
-                    document.getElementById('bizCode').value = data.biz.code || "";
-                    document.getElementById('bizImg').value = data.biz.img || "";
+                    document.getElementById('biz-name').value = data.biz.name || '';
+                    document.getElementById('biz-img').value = data.biz.img || '';
+                    document.getElementById('biz-code').value = data.biz.code || '';
+                    document.getElementById('biz-url').value = data.biz.url || '';
                 }
             }
         }
 
-        // Actualizar
-        window.updateFirebase = function() {
-            const status = document.getElementById('status-msg');
-            const bData = { left: document.getElementById('leftBanner').value, right: document.getElementById('rightBanner').value };
-            const zData = { name: document.getElementById('bizName').value, code: document.getElementById('bizCode').value, img: document.getElementById('bizImg').value };
+        // Guardar datos en Firebase
+        window.saveData = () => {
+            const updates = {
+                banners: {
+                    left: {
+                        img: document.getElementById('left-img').value,
+                        text: document.getElementById('left-text').value,
+                        url: document.getElementById('left-url').value
+                    },
+                    right: {
+                        img: document.getElementById('right-img').value,
+                        text: document.getElementById('right-text').value,
+                        url: document.getElementById('right-url').value
+                    }
+                },
+                biz: {
+                    name: document.getElementById('biz-name').value,
+                    img: document.getElementById('biz-img').value,
+                    code: document.getElementById('biz-code').value,
+                    url: document.getElementById('biz-url').value
+                }
+            };
 
-            Promise.all([
-                set(ref(db, 'content/banners'), bData),
-                set(ref(db, 'content/biz'), zData)
-            ]).then(() => {
-                status.style.color = "var(--kick-green)";
-                status.innerHTML = "¡WEB ACTUALIZADA!";
-                setTimeout(() => status.innerHTML = "", 3000);
-            });
-        }
+            set(ref(db, 'content'), updates).then(() => {
+                const toast = document.getElementById('toast');
+                toast.style.display = 'block';
+                setTimeout(() => toast.style.display = 'none', 3000);
+            }).catch(err => alert("Error al guardar: " + err));
+        };
     </script>
 </body>
 </html>
